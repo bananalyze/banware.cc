@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" type="image/png" href="assets/logo.png">
+<title>banware.cc</title>
+
+</head>
+
+<div id="context-menu">
+  <button onclick="history.back()">Back</button>
+  <button onclick="history.forward()">Forward</button>
+  <button onclick="location.reload()">Reload</button>
+
+  <div class="context-divider"></div>
+
+  <button onclick="contextAction('copy')">Copy</button>
+
+  <div class="context-divider"></div>
+
+  <div class="context-copyright">banware. © 2026</div>
+</div>
+
+<div id="copy-notification">
+  Copied!
+</div>
+
+<body>
+
+<canvas id="bg"></canvas>
+
+<main>
+
+<nav>
+  <a href="index.html" class="logo">
+  banware<span>.</span>
+</a>
+  <div class="navlinks">
+    <a href="terms.html">Terms</a>
+    <a href="https://discord.gg/banware">Discord</a>
+    <a href="https://banware.mysellauth.com/">Buy Now</a>
+  </div>
+  <a class="navbtn" href="index.html">Home</a>
+</nav>
+
+<div class="terms-wrap">
+<div class="terms-inner">
+
+  <div class="terms-eyebrow">
+    <i class="dot"></i>
+    legal
+  </div>
+
+  <h1>Terms of Service</h1>
+  <p class="terms-meta">Last updated - 13/09/2026 (dd/mm/yyyy)</p>
+
+  <div class="terms-callout" style="margin-bottom:52px">
+    <strong>Read this before purchasing.</strong> By buying or using any banware product you agree to the terms below in full. If you don't agree, don't buy. No refunds for not reading.
+  </div>
+
+  <div class="terms-section">
+    <h2>License</h2>
+    <p>When you purchase a banware product you receive a personal, non-exclusive, non-transferable license to use that software on your own machine. You do not own the software - you own the right to run it under these terms.</p>
+    <p style="margin-top:12px">Licenses are <span class="highlight">issued per-user and are non-transferable</span>. You may not sell, gift, loan, or otherwise hand your license to another person.</p>
+  </div>
+
+  <div class="terms-section">
+    <h2>What you may not do</h2>
+    <ul>
+      <li>Crack, patch, reverse-engineer, decompile, or otherwise tamper with any banware software or its protection mechanisms</li>
+      <li>Share, leak, or distribute your license key, loader, or any authenticated build to any other person</li>
+      <li>Redistribute banware software - in whole or in part - in any form without explicit written permission from banware</li>
+      <li>Use banware software in any way that violates applicable local, national, or international law</li>
+      <li>Resell access or sublicense the software under any arrangement</li>
+      <li>Bypass, circumvent, or attempt to defeat the authentication or license validation system</li>
+    </ul>
+  </div>
+
+  <div class="terms-section">
+    <h2>License revocation</h2>
+    <p>banware reserves the right to <span class="highlight">revoke any license at any time, for any reason, without notice or refund</span>. This includes but is not limited to violations of these terms, abuse of support channels, chargebacks, or activity determined to be harmful to the software, its users, or the banware brand.</p>
+    <p>Revocation is final. A revoked license cannot be reinstated.</p>
+  </div>
+
+  <div class="terms-section">
+    <h2>No redistribution</h2>
+    <p>You may not redistribute banware software, in original or modified form, through any channel - public or private, paid or free - without explicit prior written permission from banware. This includes sharing files in Discord servers, Telegram groups, forums, file hosts, or direct messages.</p>
+    <p>Unauthorized redistribution will result in immediate license revocation and may result in further action.</p>
+  </div>
+
+  <div class="terms-section">
+    <h2>Updates and availability</h2>
+    <p>banware makes no guarantee of uptime, continued development, or long-term availability of any product. Software may be updated, changed, or discontinued at any time. Purchasing a product gives you access to the current version - it does not guarantee future versions or features.</p>
+  </div>
+
+  <div class="terms-section">
+    <h2>Refunds</h2>
+    <p>All sales are final. No refunds are issued once a license key has been delivered. Chargebacks filed against a banware purchase will result in immediate and permanent revocation of your license and a ban from future purchases.</p>
+  </div>
+
+  <div class="terms-section">
+    <h2>Disclaimer</h2>
+    <p>banware software is provided as-is, without warranty of any kind, express or implied. banware is not liable for any damages - direct, indirect, or incidental - arising from use of its software. You use it at your own risk.</p>
+  </div>
+
+  <div class="terms-section">
+    <h2>Contact</h2>
+    <p>Questions about these terms? Reach us through the <a href="https://discord.gg/banware" style="color:#888;text-decoration:underline;text-underline-offset:3px">Discord server</a>. Do not contact us to negotiate exceptions to these terms - there are none.</p>
+  </div>
+
+</div>
+</div>
+
+<footer>
+  © 2026 banware. all rights reserved.
+</footer>
+
+</main>
+
+<script>
+/* ── WebGL background - identical to index.html ── */
+
+const canvas = document.getElementById("bg");
+const gl = canvas.getContext("webgl2",{alpha:false,antialias:false,powerPreference:"low-power"});
+if(!gl) throw new Error("WebGL2 not supported");
+
+const vs = `#version 300 es
+in vec2 position;
+void main(){gl_Position=vec4(position,0.0,1.0);}`;
+
+const fs = `#version 300 es
+precision highp float;
+uniform vec2 resolution;
+uniform float time;
+uniform vec3 waveColor;
+uniform vec2 mousePos;
+uniform float mouseRadius;
+out vec4 outColor;
+
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+vec2 fade(vec2 t){return t*t*t*(t*(t*6.0-15.0)+10.0);}
+
+float cnoise(vec2 P){
+  vec4 Pi=floor(P.xyxy)+vec4(0,0,1,1);
+  vec4 Pf=fract(P.xyxy)-vec4(0,0,1,1);
+  Pi=mod289(Pi);
+  vec4 ix=Pi.xzxz,iy=Pi.yyww,fx=Pf.xzxz,fy=Pf.yyww;
+  vec4 i=permute(permute(ix)+iy);
+  vec4 gx=fract(i*(1.0/41.0))*2.0-1.0;
+  vec4 gy=abs(gx)-0.5;
+  vec4 tx=floor(gx+0.5);
+  gx-=tx;
+  vec2 g00=vec2(gx.x,gy.x),g10=vec2(gx.y,gy.y),g01=vec2(gx.z,gy.z),g11=vec2(gx.w,gy.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(g00,g00),dot(g01,g01),dot(g10,g10),dot(g11,g11)));
+  g00*=norm.x;g01*=norm.y;g10*=norm.z;g11*=norm.w;
+  float n00=dot(g00,vec2(fx.x,fy.x)),n10=dot(g10,vec2(fx.y,fy.y)),n01=dot(g01,vec2(fx.z,fy.z)),n11=dot(g11,vec2(fx.w,fy.w));
+  vec2 f=fade(Pf.xy);
+  vec2 nx=mix(vec2(n00,n01),vec2(n10,n11),f.x);
+  return 2.3*mix(nx.x,nx.y,f.y);
+}
+
+float fbm(vec2 p){
+  float v=0.0,a=1.0,fr=3.0;
+  for(int i=0;i<4;i++){v+=a*abs(cnoise(p));p*=fr;a*=0.3;}
+  return v;
+}
+
+float pattern(vec2 p){vec2 p2=p-time*0.05;return fbm(p+fbm(p2));}
+
+float bayer8(vec2 p){
+  int x=int(mod(p.x,8.0)),y=int(mod(p.y,8.0));
+  float[64] m=float[64](
+    0.,48.,12.,60.,3.,51.,15.,63.,32.,16.,44.,28.,35.,19.,47.,31.,
+    8.,56.,4.,52.,11.,59.,7.,55.,40.,24.,36.,20.,43.,27.,39.,23.,
+    2.,50.,14.,62.,1.,49.,13.,61.,34.,18.,46.,30.,33.,17.,45.,29.,
+    10.,58.,6.,54.,9.,57.,5.,53.,42.,26.,38.,22.,41.,25.,37.,21.);
+  return m[y*8+x];
+}
+
+void main(){
+  vec2 uv=gl_FragCoord.xy/resolution.xy;
+  uv-=0.5;uv.x*=resolution.x/resolution.y;
+  float f=pattern(uv);
+  vec2 mouse=mousePos/resolution;
+  mouse-=0.5;mouse.x*=resolution.x/resolution.y;
+  float dist=length(uv-mouse);
+  float effect=1.0-smoothstep(0.0,mouseRadius,dist);
+  f-=0.5*effect;
+  vec3 col=mix(vec3(0.0),waveColor,f);
+  vec2 pixel=floor(gl_FragCoord.xy/2.0);
+  float threshold=bayer8(pixel)/64.0-0.25;
+  col+=threshold/3.0;
+  col=clamp(col-0.2,0.0,1.0);
+  col=floor(col*3.0+0.5)/3.0;
+  outColor=vec4(col,1.0);
+}`;
+
+function compile(type,src){
+  const s=gl.createShader(type);
+  gl.shaderSource(s,src);
+  gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){const e=gl.getShaderInfoLog(s);gl.deleteShader(s);throw new Error(e);}
+  return s;
+}
+
+const prog=gl.createProgram();
+gl.attachShader(prog,compile(gl.VERTEX_SHADER,vs));
+gl.attachShader(prog,compile(gl.FRAGMENT_SHADER,fs));
+gl.linkProgram(prog);
+if(!gl.getProgramParameter(prog,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+gl.useProgram(prog);
+
+const buf=gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+const pos=gl.getAttribLocation(prog,"position");
+gl.enableVertexAttribArray(pos);
+gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+
+const uRes=gl.getUniformLocation(prog,"resolution");
+const uTime=gl.getUniformLocation(prog,"time");
+const uWave=gl.getUniformLocation(prog,"waveColor");
+const uMouse=gl.getUniformLocation(prog,"mousePos");
+const uRad=gl.getUniformLocation(prog,"mouseRadius");
+
+let mx=0,my=0;
+window.addEventListener("pointermove",e=>{
+  const dpr=Math.min(devicePixelRatio||1,2);
+  mx=e.clientX*dpr;
+  my=(innerHeight-e.clientY)*dpr;
+});
+
+function resize(){
+  const dpr=Math.min(devicePixelRatio||1,2);
+  const w=Math.floor(innerWidth*dpr),h=Math.floor(innerHeight*dpr);
+  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}
+}
+
+function render(t){
+  resize();
+  gl.uniform2f(uRes,canvas.width,canvas.height);
+  gl.uniform1f(uTime,t*.001);
+  gl.uniform3f(uWave,.5,.5,.5);
+  gl.uniform2f(uMouse,mx,my);
+  gl.uniform1f(uRad,.25);
+  gl.drawArrays(gl.TRIANGLES,0,6);
+  requestAnimationFrame(render);
+}
+
+resize();
+requestAnimationFrame(render);
+</script>
+
+</body>
+</html>
+
+<script>
+let copiedText="";
+
+document.addEventListener("contextmenu",function(e){
+
+  e.preventDefault();
+
+  copiedText=window.getSelection().toString();
+
+  const menu=document.getElementById("context-menu");
+
+  menu.style.display="block";
+
+  const zoom=1.1;
+
+  let x=e.clientX/zoom;
+  let y=e.clientY/zoom;
+
+  const rect=menu.getBoundingClientRect();
+
+  if(x+rect.width>window.innerWidth/zoom)
+    x=window.innerWidth/zoom-rect.width-10;
+
+  if(y+rect.height>window.innerHeight/zoom)
+    y=window.innerHeight/zoom-rect.height-10;
+
+  menu.style.left=x+"px";
+  menu.style.top=y+"px";
+
+});
+
+
+document.addEventListener("click",function(e){
+
+  const menu=document.getElementById("context-menu");
+
+  if(!menu.contains(e.target))
+    menu.style.display="none";
+
+});
+
+
+async function contextAction(action){
+
+  const menu=document.getElementById("context-menu");
+
+  menu.style.display="none";
+
+  if(action==="copy"){
+
+    if(!copiedText) return;
+
+    try{
+
+      if(navigator.clipboard){
+
+        await navigator.clipboard.writeText(copiedText);
+
+      }else{
+
+        const textarea=document.createElement("textarea");
+
+        textarea.value=copiedText;
+        textarea.style.position="fixed";
+        textarea.style.left="-9999px";
+
+        document.body.appendChild(textarea);
+
+        textarea.focus();
+        textarea.select();
+
+        document.execCommand("copy");
+
+        textarea.remove();
+
+      }
+
+      const notification=document.getElementById("copy-notification");
+
+      if(notification){
+
+        notification.classList.add("show");
+
+        clearTimeout(window.copyNotificationTimeout);
+
+        window.copyNotificationTimeout=setTimeout(function(){
+          notification.classList.remove("show");
+        },1500);
+
+      }
+
+    }catch(error){
+
+      console.error("Copy failed:",error);
+
+    }
+
+  }
+
+}
+</script>
