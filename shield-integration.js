@@ -1,1 +1,228 @@
-(async()=>{try{const{assess:e,assessAndProtect:t}=await(import("https://esm.sh/@tindalabs/shield@latest")),o=await e({devtools:!0,extensions:!0,timeout:600}),{risk:s,signals:n}=o;if(n["shield.frame.embedded"]){try{window.top.location.href=window.location.href}catch{document.documentElement.innerHTML='\n          <body style="\n            margin:0;\n            background:#000;\n          "></body>\n        '}return}if(n["shield.devtools.open"])return void window.location.replace("https://www.google.com/");const a=document.getElementById("productSelector")||document.getElementById("site")||document.body,{assessment:i,protector:r}=await t(a,{assessOptions:{devtools:!1,extensions:!1},policies:[{when:{riskScore:{gte:.2}},enable:["enableWatermark"],watermarkOptions:e=>({text:`BW-${Math.round(100*e.risk.score)}-${Date.now().toString(36).toUpperCase()}`,opacity:.025,fontSize:13,color:"rgba(255,255,255,0.025)",angle:-28,gap:[140,80]})},{when:{signals:{"shield.automation.headless":!0}},enable:["enableWatermark"],watermarkOptions:e=>({text:`BW-HEADLESS-${Math.round(100*e.risk.score)}-${Date.now().toString(36).toUpperCase()}`,opacity:.04,fontSize:14,color:"rgba(255,255,255,0.04)",angle:-28,gap:[120,70]})},{when:{signals:{"shield.automation.webdriver":!0}},enable:["enableWatermark"],watermarkOptions:e=>({text:`BW-WD-${Math.round(100*e.risk.score)}-${Date.now().toString(36).toUpperCase()}`,opacity:.04,fontSize:14,color:"rgba(255,255,255,0.04)",angle:-28,gap:[120,70]})}]});n["shield.extension.detected"]&&console.log("[Banware Shield] Suspicious extension detected."),console.log("[Banware Shield] Session assessed.",{risk:s.score,signals:n}),window.__bwShield={assessment:i,dispose:()=>{r?.dispose()}}}catch(e){console.warn("[Banware Shield] Failed to initialize:",e)}})();
+<script type="module">
+(async () => {
+  try {
+    const {
+      assess,
+      assessAndProtect
+    } = await import(
+      'https://esm.sh/@tindalabs/shield@latest'
+    );
+
+    /*
+     * BANWARE SHIELD
+     *
+     * Normal users:
+     * - right click: allowed
+     * - copy/paste: allowed
+     * - text selection: allowed
+     * - screenshots: allowed
+     * - browser navigation: allowed
+     *
+     * Suspicious users:
+     * - forensic watermark
+     *
+     * DevTools:
+     * - redirect to Google
+     */
+
+    // ─────────────────────────────────────────────
+    // 1. INITIAL ASSESSMENT
+    // ─────────────────────────────────────────────
+
+    const assessment = await assess({
+      devtools: true,
+      extensions: true,
+      timeout: 600
+    });
+
+    const { risk, signals } = assessment;
+
+    // ─────────────────────────────────────────────
+    // 2. BLOCK IFRAME EMBEDDING
+    // ─────────────────────────────────────────────
+
+    if (signals['shield.frame.embedded']) {
+      try {
+        window.top.location.href = window.location.href;
+      } catch {
+        document.documentElement.innerHTML = `
+          <body style="
+            margin:0;
+            background:#000;
+          "></body>
+        `;
+      }
+
+      return;
+    }
+
+    // ─────────────────────────────────────────────
+    // 3. DEVTOOLS DETECTION
+    // ─────────────────────────────────────────────
+
+    if (signals['shield.devtools.open']) {
+      window.location.replace('https://www.google.com/');
+      return;
+    }
+
+    // ─────────────────────────────────────────────
+    // 4. CONTENT TARGET
+    // ─────────────────────────────────────────────
+
+    const contentTarget =
+      document.getElementById('productSelector') ||
+      document.getElementById('site') ||
+      document.body;
+
+    // ─────────────────────────────────────────────
+    // 5. RISK-BASED PROTECTION
+    // ─────────────────────────────────────────────
+
+    const {
+      assessment: finalAssessment,
+      protector
+    } = await assessAndProtect(
+      contentTarget,
+      {
+        // Don't run the detectors twice.
+        assessOptions: {
+          devtools: false,
+          extensions: false
+        },
+
+        policies: [
+
+          // Slightly suspicious:
+          // only add a forensic watermark.
+          {
+            when: {
+              riskScore: {
+                gte: 0.2
+              }
+            },
+
+            enable: [
+              'enableWatermark'
+            ],
+
+            watermarkOptions: a => ({
+              text:
+                `BW-${Math.round(a.risk.score * 100)}-${Date.now()
+                  .toString(36)
+                  .toUpperCase()}`,
+
+              opacity: 0.025,
+              fontSize: 13,
+              color: 'rgba(255,255,255,0.025)',
+              angle: -28,
+              gap: [140, 80]
+            })
+          },
+
+          // Headless browsers:
+          // watermark only.
+          //
+          // We deliberately DON'T block:
+          // - copying
+          // - selection
+          // - screenshots
+          // - right click
+          // - keyboard
+          {
+            when: {
+              signals: {
+                'shield.automation.headless': true
+              }
+            },
+
+            enable: [
+              'enableWatermark'
+            ],
+
+            watermarkOptions: a => ({
+              text:
+                `BW-HEADLESS-${Math.round(a.risk.score * 100)}-${Date.now()
+                  .toString(36)
+                  .toUpperCase()}`,
+
+              opacity: 0.04,
+              fontSize: 14,
+              color: 'rgba(255,255,255,0.04)',
+              angle: -28,
+              gap: [120, 70]
+            })
+          },
+
+          // WebDriver / Selenium:
+          // watermark only.
+          {
+            when: {
+              signals: {
+                'shield.automation.webdriver': true
+              }
+            },
+
+            enable: [
+              'enableWatermark'
+            ],
+
+            watermarkOptions: a => ({
+              text:
+                `BW-WD-${Math.round(a.risk.score * 100)}-${Date.now()
+                  .toString(36)
+                  .toUpperCase()}`,
+
+              opacity: 0.04,
+              fontSize: 14,
+              color: 'rgba(255,255,255,0.04)',
+              angle: -28,
+              gap: [120, 70]
+            })
+          }
+        ]
+      }
+    );
+
+    // ─────────────────────────────────────────────
+    // 6. EXTENSION DETECTION
+    // ─────────────────────────────────────────────
+
+    if (signals['shield.extension.detected']) {
+      console.log(
+        '[Banware Shield] Suspicious extension detected.'
+      );
+    }
+
+    // ─────────────────────────────────────────────
+    // 7. OPTIONAL DEBUG INFO
+    // ─────────────────────────────────────────────
+
+    console.log(
+      '[Banware Shield] Session assessed.',
+      {
+        risk: risk.score,
+        signals
+      }
+    );
+
+    // ─────────────────────────────────────────────
+    // 8. GLOBAL HANDLE
+    // ─────────────────────────────────────────────
+
+    window.__bwShield = {
+      assessment: finalAssessment,
+
+      dispose: () => {
+        protector?.dispose();
+      }
+    };
+
+  } catch (error) {
+    // Don't break the website if Shield fails to load.
+    console.warn(
+      '[Banware Shield] Failed to initialize:',
+      error
+    );
+  }
+})();
+</script>
