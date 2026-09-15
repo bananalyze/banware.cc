@@ -1,4 +1,3 @@
-<script type="module">
 (async () => {
   try {
     const {
@@ -8,26 +7,6 @@
       'https://esm.sh/@tindalabs/shield@latest'
     );
 
-    /*
-     * BANWARE SHIELD
-     *
-     * Normal users:
-     * - right click: allowed
-     * - copy/paste: allowed
-     * - text selection: allowed
-     * - screenshots: allowed
-     * - browser navigation: allowed
-     *
-     * Suspicious users:
-     * - forensic watermark
-     *
-     * DevTools:
-     * - redirect to Google
-     */
-
-    // ─────────────────────────────────────────────
-    // 1. INITIAL ASSESSMENT
-    // ─────────────────────────────────────────────
 
     const assessment = await assess({
       devtools: true,
@@ -37,9 +16,6 @@
 
     const { risk, signals } = assessment;
 
-    // ─────────────────────────────────────────────
-    // 2. BLOCK IFRAME EMBEDDING
-    // ─────────────────────────────────────────────
 
     if (signals['shield.frame.embedded']) {
       try {
@@ -56,27 +32,16 @@
       return;
     }
 
-    // ─────────────────────────────────────────────
-    // 3. DEVTOOLS DETECTION
-    // ─────────────────────────────────────────────
 
     if (signals['shield.devtools.open']) {
       window.location.replace('https://www.google.com/');
       return;
     }
 
-    // ─────────────────────────────────────────────
-    // 4. CONTENT TARGET
-    // ─────────────────────────────────────────────
-
     const contentTarget =
       document.getElementById('productSelector') ||
       document.getElementById('site') ||
       document.body;
-
-    // ─────────────────────────────────────────────
-    // 5. RISK-BASED PROTECTION
-    // ─────────────────────────────────────────────
 
     const {
       assessment: finalAssessment,
@@ -91,9 +56,6 @@
         },
 
         policies: [
-
-          // Slightly suspicious:
-          // only add a forensic watermark.
           {
             when: {
               riskScore: {
@@ -118,16 +80,6 @@
               gap: [140, 80]
             })
           },
-
-          // Headless browsers:
-          // watermark only.
-          //
-          // We deliberately DON'T block:
-          // - copying
-          // - selection
-          // - screenshots
-          // - right click
-          // - keyboard
           {
             when: {
               signals: {
@@ -182,21 +134,11 @@
         ]
       }
     );
-
-    // ─────────────────────────────────────────────
-    // 6. EXTENSION DETECTION
-    // ─────────────────────────────────────────────
-
     if (signals['shield.extension.detected']) {
       console.log(
         '[Banware Shield] Suspicious extension detected.'
       );
     }
-
-    // ─────────────────────────────────────────────
-    // 7. OPTIONAL DEBUG INFO
-    // ─────────────────────────────────────────────
-
     console.log(
       '[Banware Shield] Session assessed.',
       {
@@ -204,11 +146,6 @@
         signals
       }
     );
-
-    // ─────────────────────────────────────────────
-    // 8. GLOBAL HANDLE
-    // ─────────────────────────────────────────────
-
     window.__bwShield = {
       assessment: finalAssessment,
 
@@ -225,4 +162,3 @@
     );
   }
 })();
-</script>
