@@ -1,1440 +1,313 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<meta property="og:type" content="website">
-<meta property="og:title" content="Banware — World-Class Lua">
-<meta property="og:description" content="The #1 choice for RIVALS Lua.">
-<meta property="og:url" content="https://banware.cc/">
-<meta property="og:image" content="https://banware.cc/assets/logo.png">
-
-<meta name="theme-color" content="#ffffff">
-
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Banware — World-Class Lua">
-<meta name="twitter:description" content="The #1 choice for RIVALS Lua.">
-<meta name="twitter:image" content="https://banware.cc/assets/logo.png">
-
-
-<link rel="stylesheet" href="style.css">
-<link rel="icon" type="image/png" href="assets/logo.png">
-<title>banware.cc</title>
-</head>
-
-<body>
-
-<div id="site">
-
-<canvas id="bg"></canvas>
-
-<main>
-
-<nav>
-
-<a href="index.html" class="logo">
-  banware<span>.</span>
-</a>
-
-<div class="navlinks">
-  <a href="terms.html">Terms</a>
-  <a href="https://discord.gg/banware">Discord</a>
-  <a href="https://banware.mysellauth.com/">Buy Now</a>
-</div>
-
-<a class="navbtn" href="index.html">
-  Home
-</a>
-
-</nav>
-
-
-<div class="hero">
-
-<div class="hero-inner">
-
-<div class="eyebrow">
-  <i class="dot"></i>
-  built different
-</div>
-
-<h1>
-  banware,<br>
-  <span>simply better.</span>
-</h1>
-
-<p>
-  Tools built for people who want fast, clean and reliable
-  software without all the unnecessary stuff.
-</p>
-
-<div class="actions">
-
-<a class="primary" href="https://discord.gg/banware">
-  Get started
-</a>
-
-<a class="secondary" href="https://banware.mysellauth.com">
-  View products
-</a>
-
-</div>
-
-</div>
-
-
-<div class="product-selector" id="productSelector">
-
-<div class="product-preview" id="productPreview">
-
-<div class="product-card" id="productCard">
-
-<img
-  src="assets/regular.png"
-  alt="Regular"
-  id="productImage"
-  draggable="false"
->
-
-</div>
-
-</div>
-
-<div class="product-name" id="productName">
-  Regular
-</div>
-
-<div class="product-toggle">
-
-<button
-  class="product-option active"
-  data-product="regular"
-  type="button"
->
-  Regular
-</button>
-
-<button
-  class="product-option"
-  data-product="private"
-  type="button"
->
-  Private
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-
-<section>
-
-<div class="cards">
-
-<div class="card">
-
-<small>
-  01 / Fast
-</small>
-
-<h3>
-  Built for speed
-</h3>
-
-<p>
-  Lightweight tools designed to stay responsive
-  when you need them most.
-</p>
-
-</div>
-
-
-<div class="card">
-
-<small>
-  02 / Clean
-</small>
-
-<h3>
-  No unnecessary stuff
-</h3>
-
-<p>
-  A focused interface with only the controls
-  and information that actually matter.
-</p>
-
-</div>
-
-
-<div class="card">
-
-<small>
-  03 / Reliable
-</small>
-
-<h3>
-  Made to just work
-</h3>
-
-<p>
-  Simple products, predictable behavior and a
-  setup that takes almost no time.
-</p>
-
-</div>
-
-</div>
-
-</section>
-
-
-<footer>
-  © 2026 banware. all rights reserved.
-</footer>
-
-</main>
-
-</div>
-
-
-<div class="image-modal" id="imageModal">
-
-<button
-  class="modal-close"
-  id="modalClose"
->
-  &times;
-</button>
-
-<img
-  id="modalImage"
-  src=""
-  alt=""
->
-
-</div>
-
-
-<div id="context-menu">
-
-<button onclick="history.back()">
-  Back
-</button>
-
-<button onclick="history.forward()">
-  Forward
-</button>
-
-<button onclick="location.reload()">
-  Reload
-</button>
-
-<div class="context-divider"></div>
-
-<button onclick="contextAction('copy')">
-  Copy
-</button>
-
-<div class="context-divider"></div>
-
-<div class="context-copyright">
-  banware. © 2026
-</div>
-
-</div>
-
-
-<div id="copy-notification">
-  Copied!
-</div>
-
-
-<script>
-
-/* Product toggle + tilt */
-
-(function(){
-
-  const preview =
-    document.getElementById('productPreview');
-
-  const card =
-    document.getElementById('productCard');
-
-  const image =
-    document.getElementById('productImage');
-
-  const name =
-    document.getElementById('productName');
-
-  const buttons =
-    document.querySelectorAll('.product-option');
-
-
-  const products = {
-
-    regular:{
-      name:'Regular',
-      image:'assets/regular.png'
-    },
-
-    private:{
-      name:'Private',
-      image:'assets/private.png'
-    }
-
-  };
-
-
-  let current = {
-    rx:0,
-    ry:0
-  };
-
-
-  let target = {
-    rx:0,
-    ry:0
-  };
-
-
-  let raf = null;
-
-
-  const MAX_TILT = 14;
-  const SNAP = .12;
-
-
-  function lerp(a,b,t){
-    return a + (b-a) * t;
-  }
-
-
-  function animateTilt(){
-
-    current.rx =
-      lerp(
-        current.rx,
-        target.rx,
-        SNAP
-      );
-
-
-    current.ry =
-      lerp(
-        current.ry,
-        target.ry,
-        SNAP
-      );
-
-
-    card.style.transform =
-      `rotateX(${current.rx}deg) rotateY(${current.ry}deg) scale3d(1.025,1.025,1.025)`;
-
-
-    if(
-      Math.abs(current.rx-target.rx) > .01 ||
-      Math.abs(current.ry-target.ry) > .01
-    ){
-
-      raf =
-        requestAnimationFrame(
-          animateTilt
-        );
-
-    }else{
-
-      raf = null;
-
-    }
-
-  }
-
-
-  function resetTilt(){
-
-    target.rx = 0;
-    target.ry = 0;
-
-
-    function snap(){
-
-      current.rx =
-        lerp(
-          current.rx,
-          0,
-          .1
-        );
-
-
-      current.ry =
-        lerp(
-          current.ry,
-          0,
-          .1
-        );
-
-
-      card.style.transform =
-        `rotateX(${current.rx}deg) rotateY(${current.ry}deg) scale3d(1,1,1)`;
-
-
-      if(
-        Math.abs(current.rx) > .05 ||
-        Math.abs(current.ry) > .05
-      ){
-
-        requestAnimationFrame(snap);
-
-      }else{
-
-        card.style.transform = '';
-
-      }
-
-    }
-
-
-    snap();
-
-  }
-
-
-  preview.addEventListener(
-    'mousemove',
-    e=>{
-
-      const rect =
-        card.getBoundingClientRect();
-
-
-      const cx =
-        rect.left +
-        rect.width / 2;
-
-
-      const cy =
-        rect.top +
-        rect.height / 2;
-
-
-      const dx =
-        (e.clientX-cx) /
-        (rect.width/2);
-
-
-      const dy =
-        (e.clientY-cy) /
-        (rect.height/2);
-
-
-      target.ry =
-        dx * MAX_TILT;
-
-
-      target.rx =
-        -dy * MAX_TILT;
-
-
-      if(!raf){
-
-        raf =
-          requestAnimationFrame(
-            animateTilt
-          );
-
-      }
-
-    }
-  );
-
-
-  preview.addEventListener(
-    'mouseleave',
-    ()=>{
-
-      if(raf){
-
-        cancelAnimationFrame(raf);
-
-        raf = null;
-
-      }
-
-      resetTilt();
-
-    }
-  );
-
-
-  function setProduct(product){
-
-    const data =
-      products[product];
-
-
-    if(!data)
-      return;
-
-
-    image.style.opacity = '0';
-
-
-    setTimeout(()=>{
-
-      image.src =
-        data.image;
-
-      image.alt =
-        data.name;
-
-      name.textContent =
-        data.name;
-
-
-      image.onload = ()=>{
-
-        image.style.opacity = '.92';
-
-      };
-
-    },100);
-
-
-    buttons.forEach(button=>{
-
-      button.classList.toggle(
-        'active',
-        button.dataset.product === product
-      );
-
-    });
-
-  }
-
-
-  buttons.forEach(button=>{
-
-    button.addEventListener(
-      'click',
-      ()=>{
-
-        setProduct(
-          button.dataset.product
-        );
-
-      }
-    );
-
-  });
-
-
-  setProduct('regular');
-
-})();
-
-</script>
-
-
-<script>
-
-/* WebGL background */
-
-const canvas =
-  document.getElementById("bg");
-
-
-const gl =
-  canvas.getContext(
-    "webgl2",
-    {
-      alpha:false,
-      antialias:false,
-      powerPreference:"low-power"
-    }
-  );
-
-
-if(!gl)
-  throw new Error(
-    "WebGL2 not supported"
-  );
-
-
-const vs = `#version 300 es
-
-in vec2 position;
-
-void main(){
-  gl_Position =
-    vec4(position,0.0,1.0);
-}
-`;
-
-
-const fs = `#version 300 es
-
-precision highp float;
-
-uniform vec2 resolution;
-uniform float time;
-uniform vec3 waveColor;
-uniform vec2 mousePos;
-uniform float mouseRadius;
-
-out vec4 outColor;
-
-
-vec4 mod289(vec4 x){
-  return mod(
-    x,
-    289.0
-  );
-}
-
-
-vec4 permute(vec4 x){
-  return mod289(
-    ((x*34.0)+1.0)*x
-  );
-}
-
-
-vec4 taylorInvSqrt(vec4 r){
-  return
-    1.79284291400159 -
-    0.85373472095314*r;
-}
-
-
-vec2 fade(vec2 t){
-  return
-    t*t*t*
-    (t*(t*6.0-15.0)+10.0);
-}
-
-
-float cnoise(vec2 P){
-
-  vec4 Pi =
-    floor(P.xyxy) +
-    vec4(0,0,1,1);
-
-  vec4 Pf =
-    fract(P.xyxy) -
-    vec4(0,0,1,1);
-
-
-  Pi =
-    mod289(Pi);
-
-
-  vec4 ix =
-    Pi.xzxz;
-
-
-  vec4 iy =
-    Pi.yyww;
-
-
-  vec4 fx =
-    Pf.xzxz;
-
-
-  vec4 fy =
-    Pf.yyww;
-
-
-  vec4 i =
-    permute(
-      permute(ix)+iy
-    );
-
-
-  vec4 gx =
-    fract(i*(1.0/41.0))*2.0-1.0;
-
-
-  vec4 gy =
-    abs(gx)-0.5;
-
-
-  vec4 tx =
-    floor(gx+0.5);
-
-
-  gx -= tx;
-
-
-  vec2 g00 =
-    vec2(gx.x,gy.x);
-
-
-  vec2 g10 =
-    vec2(gx.y,gy.y);
-
-
-  vec2 g01 =
-    vec2(gx.z,gy.z);
-
-
-  vec2 g11 =
-    vec2(gx.w,gy.w);
-
-
-  vec4 norm =
-    taylorInvSqrt(
-      vec4(
-        dot(g00,g00),
-        dot(g01,g01),
-        dot(g10,g10),
-        dot(g11,g11)
-      )
-    );
-
-
-  g00 *= norm.x;
-  g01 *= norm.y;
-  g10 *= norm.z;
-  g11 *= norm.w;
-
-
-  float n00 =
-    dot(
-      g00,
-      vec2(fx.x,fy.x)
-    );
-
-
-  float n10 =
-    dot(
-      g10,
-      vec2(fx.y,fy.y)
-    );
-
-
-  float n01 =
-    dot(
-      g01,
-      vec2(fx.z,fy.z)
-    );
-
-
-  float n11 =
-    dot(
-      g11,
-      vec2(fx.w,fy.w)
-    );
-
-
-  vec2 f =
-    fade(Pf.xy);
-
-
-  vec2 nx =
-    mix(
-      vec2(n00,n01),
-      vec2(n10,n11),
-      f.x
-    );
-
-
-  return
-    2.3 *
-    mix(
-      nx.x,
-      nx.y,
-      f.y
-    );
-
-}
-
-
-float fbm(vec2 p){
-
-  float v = 0.0;
-  float a = 1.0;
-  float fr = 3.0;
-
-
-  for(int i=0;i<4;i++){
-
-    v +=
-      a *
-      abs(cnoise(p));
-
-
-    p *= fr;
-    a *= 0.3;
-
-  }
-
-
-  return v;
-
-}
-
-
-float pattern(vec2 p){
-
-  vec2 p2 =
-    p-time*0.05;
-
-
-  return
-    fbm(
-      p+fbm(p2)
-    );
-
-}
-
-
-float bayer8(vec2 p){
-
-  int x =
-    int(mod(p.x,8.0));
-
-
-  int y =
-    int(mod(p.y,8.0));
-
-
-  float[64] m =
-    float[64](
-      0.,48.,12.,60.,3.,51.,15.,63.,
-      32.,16.,44.,28.,35.,19.,47.,31.,
-      8.,56.,4.,52.,11.,59.,7.,55.,
-      40.,24.,36.,20.,43.,27.,39.,23.,
-      2.,50.,14.,62.,1.,49.,13.,61.,
-      34.,18.,46.,30.,33.,17.,45.,29.,
-      10.,58.,6.,54.,9.,57.,5.,53.,
-      42.,26.,38.,22.,41.,25.,37.,21.
-    );
-
-
-  return
-    m[y*8+x];
-
-}
-
-
-void main(){
-
-  vec2 uv =
-    gl_FragCoord.xy /
-    resolution.xy;
-
-
-  uv -= 0.5;
-
-
-  uv.x *=
-    resolution.x /
-    resolution.y;
-
-
-  float f =
-    pattern(uv);
-
-
-  vec2 mouse =
-    mousePos /
-    resolution;
-
-
-  mouse -= 0.5;
-
-
-  mouse.x *=
-    resolution.x /
-    resolution.y;
-
-
-  float dist =
-    length(
-      uv-mouse
-    );
-
-
-  float effect =
-    1.0 -
-    smoothstep(
-      0.0,
-      mouseRadius,
-      dist
-    );
-
-
-  f -=
-    0.5 *
-    effect;
-
-
-  vec3 col =
-    mix(
-      vec3(0.0),
-      waveColor,
-      f
-    );
-
-
-  vec2 pixel =
-    floor(
-      gl_FragCoord.xy/2.0
-    );
-
-
-  float threshold =
-    bayer8(pixel)/64.0 -
-    0.25;
-
-
-  col +=
-    threshold/3.0;
-
-
-  col =
-    clamp(
-      col-0.2,
-      0.0,
-      1.0
-    );
-
-
-  col =
-    floor(
-      col*3.0+0.5
-    )/3.0;
-
-
-  outColor =
-    vec4(col,1.0);
-
-}
-`;
-
-
-function compile(type,src){
-
-  const s =
-    gl.createShader(type);
-
-
-  gl.shaderSource(
-    s,
-    src
-  );
-
-
-  gl.compileShader(s);
-
-
-  if(
-    !gl.getShaderParameter(
-      s,
-      gl.COMPILE_STATUS
-    )
-  ){
-
-    const e =
-      gl.getShaderInfoLog(s);
-
-
-    gl.deleteShader(s);
-
-
-    throw new Error(e);
-
-  }
-
-
-  return s;
-
-}
-
-
-const prog =
-  gl.createProgram();
-
-
-gl.attachShader(
-  prog,
-  compile(
-    gl.VERTEX_SHADER,
-    vs
-  )
-);
-
-
-gl.attachShader(
-  prog,
-  compile(
-    gl.FRAGMENT_SHADER,
-    fs
-  )
-);
-
-
-gl.linkProgram(prog);
-
-
-if(
-  !gl.getProgramParameter(
-    prog,
-    gl.LINK_STATUS
-  )
-){
-
-  throw new Error(
-    gl.getProgramInfoLog(prog)
-  );
-
-}
-
-
-gl.useProgram(prog);
-
-
-const buf =
-  gl.createBuffer();
-
-
-gl.bindBuffer(
-  gl.ARRAY_BUFFER,
-  buf
-);
-
-
-gl.bufferData(
-  gl.ARRAY_BUFFER,
-  new Float32Array([
-    -1,-1,
-     1,-1,
-    -1, 1,
-    -1, 1,
-     1,-1,
-     1, 1
-  ]),
-  gl.STATIC_DRAW
-);
-
-
-const pos =
-  gl.getAttribLocation(
-    prog,
-    "position"
-  );
-
-
-gl.enableVertexAttribArray(pos);
-
-
-gl.vertexAttribPointer(
-  pos,
-  2,
-  gl.FLOAT,
-  false,
-  0,
-  0
-);
-
-
-const uRes =
-  gl.getUniformLocation(
-    prog,
-    "resolution"
-  );
-
-
-const uTime =
-  gl.getUniformLocation(
-    prog,
-    "time"
-  );
-
-
-const uWave =
-  gl.getUniformLocation(
-    prog,
-    "waveColor"
-  );
-
-
-const uMouse =
-  gl.getUniformLocation(
-    prog,
-    "mousePos"
-  );
-
-
-const uRad =
-  gl.getUniformLocation(
-    prog,
-    "mouseRadius"
-  );
-
-
-let mx = 0;
-let my = 0;
-
-
-window.addEventListener(
-  "pointermove",
-  e=>{
-
-    const dpr =
-      Math.min(
-        devicePixelRatio || 1,
-        2
-      );
-
-
-    mx =
-      e.clientX*dpr;
-
-
-    my =
-      (innerHeight-e.clientY)*dpr;
-
-  }
-);
-
-
-function resize(){
-
-  const dpr =
-    Math.min(
-      devicePixelRatio || 1,
-      2
-    );
-
-
-  const w =
-    Math.floor(
-      innerWidth*dpr
-    );
-
-
-  const h =
-    Math.floor(
-      innerHeight*dpr
-    );
-
-
-  if(
-    canvas.width !== w ||
-    canvas.height !== h
-  ){
-
-    canvas.width = w;
-    canvas.height = h;
-
-
-    gl.viewport(
-      0,
-      0,
-      w,
-      h
-    );
-
-  }
-
-}
-
-
-function render(t){
-
-  resize();
-
-
-  gl.uniform2f(
-    uRes,
-    canvas.width,
-    canvas.height
-  );
-
-
-  gl.uniform1f(
-    uTime,
-    t*.001
-  );
-
-
-  gl.uniform3f(
-    uWave,
-    .5,
-    .5,
-    .5
-  );
-
-
-  gl.uniform2f(
-    uMouse,
-    mx,
-    my
-  );
-
-
-  gl.uniform1f(
-    uRad,
-    .25
-  );
-
-
-  gl.drawArrays(
-    gl.TRIANGLES,
-    0,
-    6
-  );
-
-
-  requestAnimationFrame(
-    render
-  );
-
-}
-
-
-resize();
-
-
-requestAnimationFrame(
-  render
-);
-
-</script>
-
-
-<script>
-
-/* Context menu */
-
-let copiedText = "";
-
-
-document.addEventListener(
-  "contextmenu",
-  function(e){
-
-    e.preventDefault();
-
-
-    copiedText =
-      window.getSelection().toString();
-
-
-    const menu =
-      document.getElementById(
-        "context-menu"
-      );
-
-
-    menu.style.display =
-      "block";
-
-
-    let x =
-      e.clientX;
-
-
-    let y =
-      e.clientY;
-
-
-    const rect =
-      menu.getBoundingClientRect();
-
-
-    if(
-      x+rect.width >
-      window.innerWidth
-    ){
-
-      x =
-        window.innerWidth -
-        rect.width -
-        10;
-
-    }
-
-
-    if(
-      y+rect.height >
-      window.innerHeight
-    ){
-
-      y =
-        window.innerHeight -
-        rect.height -
-        10;
-
-    }
-
-
-    menu.style.left =
-      x+"px";
-
-
-    menu.style.top =
-      y+"px";
-
-  }
-);
-
-
-document.addEventListener(
-  "click",
-  function(e){
-
-    const menu =
-      document.getElementById(
-        "context-menu"
-      );
-
-
-    if(
-      !menu.contains(e.target)
-    ){
-
-      menu.style.display =
-        "none";
-
-    }
-
-  }
-);
-
-
-async function contextAction(action){
-
-  const menu =
-    document.getElementById(
-      "context-menu"
-    );
-
-
-  menu.style.display =
-    "none";
-
-
-  if(
-    action === "copy"
-  ){
-
-    if(!copiedText)
-      return;
-
-
-    try{
-
-      if(
-        navigator.clipboard &&
-        window.isSecureContext
-      ){
-
-        await navigator.clipboard.writeText(
-          copiedText
-        );
-
-      }else{
-
-        const textarea =
-          document.createElement(
-            "textarea"
-          );
-
-
-        textarea.value =
-          copiedText;
-
-
-        textarea.style.position =
-          "fixed";
-
-
-        textarea.style.left =
-          "-9999px";
-
-
-        document.body.appendChild(
-          textarea
-        );
-
-
-        textarea.focus();
-        textarea.select();
-
-
-        document.execCommand(
-          "copy"
-        );
-
-
-        textarea.remove();
-
-      }
-
-
-      const notification =
-        document.getElementById(
-          "copy-notification"
-        );
-
-
-      if(notification){
-
-        notification.classList.add(
-          "show"
-        );
-
-
-        clearTimeout(
-          window.copyNotificationTimeout
-        );
-
-
-        window.copyNotificationTimeout =
-          setTimeout(
-            function(){
-
-              notification.classList.remove(
-                "show"
-              );
-
+<!doctype html>
+<html lang=en>
+
+  <head>
+    <meta charset=UTF-8>
+    <meta name=viewport content="width=device-width,initial-scale=1">
+    <title>Banware — World-Class Lua Scripts for RIVALS | banware.cc</title>
+    <meta name=description content="Banware is the #1 choice for RIVALS Lua scripts. Fast, clean, and reliable — Regular and Private tiers available. Built for people who want software that actually works.">
+    <meta name=keywords content="RIVALS lua, RIVALS scripts, banware, lua scripts, game lua, rivals of aether lua, roblox rivals lua, rivals script, rivals hacks, rivals cheats">
+    <meta name=author content=Banware>
+    <meta name=robots content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <link rel=canonical href=https://banware.cc/>
+    <meta property=og:type content=website>
+    <meta property=og:site_name content=Banware>
+    <meta property=og:title content="Banware — World-Class Lua Scripts for RIVALS">
+    <meta property=og:description content="The #1 choice for RIVALS Lua. Fast, clean, and reliable software without the unnecessary stuff. Regular and Private tiers available.">
+    <meta property=og:url content=https://banware.cc/>
+    <meta property=og:image content=https://banware.cc/assets/og-image.png>
+    <meta property=og:image:width content=1200>
+    <meta property=og:image:height content=630>
+    <meta property=og:image:alt content="Banware — World-Class Lua Scripts for RIVALS">
+    <meta property=og:locale content=en_US>
+    <meta name=twitter:card content=summary_large_image>
+    <meta name=twitter:site content=@banwarecc>
+    <meta name=twitter:title content="Banware — World-Class Lua Scripts for RIVALS">
+    <meta name=twitter:description content="The #1 choice for RIVALS Lua. Fast, clean, and reliable software without the unnecessary stuff.">
+    <meta name=twitter:image content=https://banware.cc/assets/og-image.png>
+    <meta name=twitter:image:alt content="Banware — World-Class Lua Scripts for RIVALS">
+    <meta name=theme-color content=#000000>
+    <meta name=color-scheme content=dark>
+    <meta name=msapplication-TileColor content=#000000>
+    <link rel=icon type=image/png sizes=32x32 href=assets/favicon-32.png>
+    <link rel=icon type=image/png sizes=16x16 href=assets/favicon-16.png>
+    <link rel=apple-touch-icon sizes=180x180 href=assets/apple-touch-icon.png>
+    <link rel=manifest href=manifest.json>
+    <link rel=preconnect href=https://fonts.googleapis.com>
+    <link rel=dns-prefetch href=https://banware.mysellauth.com>
+    <link rel=dns-prefetch href=https://discord.gg>
+    <link rel=stylesheet href=style.css>
+    <script type=application/ld+json>
+      {
+        "@context": "https://schema.org",
+        "@graph": [{
+            "@type": "WebSite",
+            "@id": "https://banware.cc/#website",
+            "url": "https://banware.cc/",
+            "name": "Banware",
+            "description": "World-Class Lua Scripts for RIVALS",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://banware.cc/?s={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://banware.cc/#organization",
+            "name": "Banware",
+            "url": "https://banware.cc/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://banware.cc/assets/logo.png",
+              "width": 512,
+              "height": 512
             },
-            1500
-          );
+            "sameAs": [
+              "https://discord.gg/banware"
+            ]
+          },
+          {
+            "@type": "WebPage",
+            "@id": "https://banware.cc/#webpage",
+            "url": "https://banware.cc/",
+            "name": "Banware — World-Class Lua Scripts for RIVALS",
+            "isPartOf": {
+              "@id": "https://banware.cc/#website"
+            },
+            "about": {
+              "@id": "https://banware.cc/#organization"
+            },
+            "description": "The #1 choice for RIVALS Lua. Fast, clean, and reliable software without the unnecessary stuff.",
+            "breadcrumb": {
+              "@type": "BreadcrumbList",
+              "itemListElement": [{
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://banware.cc/"
+              }]
+            }
+          },
+          {
+            "@type": "SoftwareApplication",
+            "name": "Banware Regular",
+            "applicationCategory": "GameApplication",
+            "operatingSystem": "Windows",
+            "url": "https://banware.mysellauth.com/",
+            "description": "Fast, clean, and reliable Lua scripts for RIVALS. Lightweight tools designed to stay responsive.",
+            "offers": {
+              "@type": "Offer",
+              "seller": {
+                "@id": "https://banware.cc/#organization"
+              }
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
 
+  <body>
+    <div id=site> <canvas id=bg></canvas>
+      <main>
+        <nav> <a href=index.html class=logo> banware<span>.</span> </a>
+          <div class=navlinks> <a href=terms.html>Terms</a> <a href=https://discord.gg/banware>Discord</a> <a href=https://banware.mysellauth.com/>Buy Now</a> </div> <a class=navbtn href=index.html> Home </a>
+        </nav>
+        <div class=hero>
+          <div class=hero-inner>
+            <div class=eyebrow> <i class=dot></i> built different </div>
+            <h1> banware,<br> <span>simply better.</span> </h1>
+            <p> Tools built for people who want fast, clean and reliable software without all the unnecessary stuff. </p>
+            <div class=actions> <a class=primary href=https://discord.gg/banware> Get started </a> <a class=secondary href=https://banware.mysellauth.com> View products </a> </div>
+          </div>
+          <div class=product-selector id=productSelector>
+            <div class=product-preview id=productPreview>
+              <div class=product-card id=productCard> <img src=assets/regular.png alt=Regular id=productImage draggable=false> </div>
+            </div>
+            <div class=product-name id=productName> Regular </div>
+            <div class=product-toggle> <button class="product-option active" data-product=regular type=button> Regular </button> <button class=product-option data-product=private type=button> Private </button> </div>
+          </div>
+        </div>
+        <section>
+          <div class=cards>
+            <div class=card> <small> 01 / Fast </small>
+              <h3> Built for speed </h3>
+              <p> Lightweight tools designed to stay responsive when you need them most. </p>
+            </div>
+            <div class=card> <small> 02 / Clean </small>
+              <h3> No unnecessary stuff </h3>
+              <p> A focused interface with only the controls and information that actually matter. </p>
+            </div>
+            <div class=card> <small> 03 / Reliable </small>
+              <h3> Made to just work </h3>
+              <p> Simple products, predictable behavior and a setup that takes almost no time. </p>
+            </div>
+          </div>
+        </section>
+        <footer> © 2026 banware. all rights reserved. </footer>
+      </main>
+    </div>
+    <div class=image-modal id=imageModal> <button class=modal-close id=modalClose> × </button> <img id=modalImage src="" alt=""> </div>
+    <div id=context-menu> <button onclick=history.back()> Back </button> <button onclick=history.forward()> Forward </button> <button onclick=location.reload()> Reload </button>
+      <div class=context-divider></div> <button onclick='contextAction("copy")'> Copy </button>
+      <div class=context-divider></div>
+      <div class=context-copyright> banware. © 2026 </div>
+    </div>
+    <div id=copy-notification> Copied! </div>
+    <script>
+      ! function() {
+        const e = document.getElementById("productPreview"),
+          t = document.getElementById("productCard"),
+          r = document.getElementById("productImage"),
+          a = document.getElementById("productName"),
+          n = document.querySelectorAll(".product-option"),
+          o = {
+            regular: {
+              name: "Regular",
+              image: "assets/regular.png"
+            },
+            private: {
+              name: "Private",
+              image: "assets/private.png"
+            }
+          };
+        let i = {
+            rx: 0,
+            ry: 0
+          },
+          s = {
+            rx: 0,
+            ry: 0
+          },
+          c = null;
+
+        function l(e, t, r) {
+          return e + (t - e) * r
+        }
+
+        function d() {
+          i.rx = l(i.rx, s.rx, .12), i.ry = l(i.ry, s.ry, .12), t.style.transform = `rotateX(${i.rx}deg) rotateY(${i.ry}deg) scale3d(1.025,1.025,1.025)`, c = Math.abs(i.rx - s.rx) > .01 || Math.abs(i.ry - s.ry) > .01 ? requestAnimationFrame(d) : null
+        }
+
+        function m(e) {
+          const t = o[e];
+          t && (r.style.opacity = "0", setTimeout((() => {
+            r.src = t.image, r.alt = t.name, a.textContent = t.name, r.onload = () => {
+              r.style.opacity = ".92"
+            }
+          }), 100), n.forEach((t => {
+            t.classList.toggle("active", t.dataset.product === e)
+          })))
+        }
+        e.addEventListener("mousemove", (e => {
+          const r = t.getBoundingClientRect(),
+            a = r.left + r.width / 2,
+            n = r.top + r.height / 2,
+            o = (e.clientX - a) / (r.width / 2),
+            i = (e.clientY - n) / (r.height / 2);
+          s.ry = 14 * o, s.rx = 14 * -i, c || (c = requestAnimationFrame(d))
+        })), e.addEventListener("mouseleave", (() => {
+          c && (cancelAnimationFrame(c), c = null), s.rx = 0, s.ry = 0,
+            function e() {
+              i.rx = l(i.rx, 0, .1), i.ry = l(i.ry, 0, .1), t.style.transform = `rotateX(${i.rx}deg) rotateY(${i.ry}deg) scale3d(1,1,1)`, Math.abs(i.rx) > .05 || Math.abs(i.ry) > .05 ? requestAnimationFrame(e) : t.style.transform = ""
+            }()
+        })), n.forEach((e => {
+          e.addEventListener("click", (() => {
+            m(e.dataset.product)
+          }))
+        })), m("regular")
+      }()
+    </script>
+    <script>
+      const canvas = document.getElementById("bg"),
+        gl = canvas.getContext("webgl2", {
+          alpha: !1,
+          antialias: !1,
+          powerPreference: "low-power"
+        });
+      if (!gl) throw new Error("WebGL2 not supported");
+      const vs = "#version 300 es\n\nin vec2 position;\n\nvoid main(){\n  gl_Position =\n    vec4(position,0.0,1.0);\n}\n",
+        fs = "#version 300 es\n\nprecision highp float;\n\nuniform vec2 resolution;\nuniform float time;\nuniform vec3 waveColor;\nuniform vec2 mousePos;\nuniform float mouseRadius;\n\nout vec4 outColor;\n\n\nvec4 mod289(vec4 x){\n  return mod(\n    x,\n    289.0\n  );\n}\n\n\nvec4 permute(vec4 x){\n  return mod289(\n    ((x*34.0)+1.0)*x\n  );\n}\n\n\nvec4 taylorInvSqrt(vec4 r){\n  return\n    1.79284291400159 -\n    0.85373472095314*r;\n}\n\n\nvec2 fade(vec2 t){\n  return\n    t*t*t*\n    (t*(t*6.0-15.0)+10.0);\n}\n\n\nfloat cnoise(vec2 P){\n\n  vec4 Pi =\n    floor(P.xyxy) +\n    vec4(0,0,1,1);\n\n  vec4 Pf =\n    fract(P.xyxy) -\n    vec4(0,0,1,1);\n\n\n  Pi =\n    mod289(Pi);\n\n\n  vec4 ix =\n    Pi.xzxz;\n\n\n  vec4 iy =\n    Pi.yyww;\n\n\n  vec4 fx =\n    Pf.xzxz;\n\n\n  vec4 fy =\n    Pf.yyww;\n\n\n  vec4 i =\n    permute(\n      permute(ix)+iy\n    );\n\n\n  vec4 gx =\n    fract(i*(1.0/41.0))*2.0-1.0;\n\n\n  vec4 gy =\n    abs(gx)-0.5;\n\n\n  vec4 tx =\n    floor(gx+0.5);\n\n\n  gx -= tx;\n\n\n  vec2 g00 =\n    vec2(gx.x,gy.x);\n\n\n  vec2 g10 =\n    vec2(gx.y,gy.y);\n\n\n  vec2 g01 =\n    vec2(gx.z,gy.z);\n\n\n  vec2 g11 =\n    vec2(gx.w,gy.w);\n\n\n  vec4 norm =\n    taylorInvSqrt(\n      vec4(\n        dot(g00,g00),\n        dot(g01,g01),\n        dot(g10,g10),\n        dot(g11,g11)\n      )\n    );\n\n\n  g00 *= norm.x;\n  g01 *= norm.y;\n  g10 *= norm.z;\n  g11 *= norm.w;\n\n\n  float n00 =\n    dot(\n      g00,\n      vec2(fx.x,fy.x)\n    );\n\n\n  float n10 =\n    dot(\n      g10,\n      vec2(fx.y,fy.y)\n    );\n\n\n  float n01 =\n    dot(\n      g01,\n      vec2(fx.z,fy.z)\n    );\n\n\n  float n11 =\n    dot(\n      g11,\n      vec2(fx.w,fy.w)\n    );\n\n\n  vec2 f =\n    fade(Pf.xy);\n\n\n  vec2 nx =\n    mix(\n      vec2(n00,n01),\n      vec2(n10,n11),\n      f.x\n    );\n\n\n  return\n    2.3 *\n    mix(\n      nx.x,\n      nx.y,\n      f.y\n    );\n\n}\n\n\nfloat fbm(vec2 p){\n\n  float v = 0.0;\n  float a = 1.0;\n  float fr = 3.0;\n\n\n  for(int i=0;i<4;i++){\n\n    v +=\n      a *\n      abs(cnoise(p));\n\n\n    p *= fr;\n    a *= 0.3;\n\n  }\n\n\n  return v;\n\n}\n\n\nfloat pattern(vec2 p){\n\n  vec2 p2 =\n    p-time*0.05;\n\n\n  return\n    fbm(\n      p+fbm(p2)\n    );\n\n}\n\n\nfloat bayer8(vec2 p){\n\n  int x =\n    int(mod(p.x,8.0));\n\n\n  int y =\n    int(mod(p.y,8.0));\n\n\n  float[64] m =\n    float[64](\n      0.,48.,12.,60.,3.,51.,15.,63.,\n      32.,16.,44.,28.,35.,19.,47.,31.,\n      8.,56.,4.,52.,11.,59.,7.,55.,\n      40.,24.,36.,20.,43.,27.,39.,23.,\n      2.,50.,14.,62.,1.,49.,13.,61.,\n      34.,18.,46.,30.,33.,17.,45.,29.,\n      10.,58.,6.,54.,9.,57.,5.,53.,\n      42.,26.,38.,22.,41.,25.,37.,21.\n    );\n\n\n  return\n    m[y*8+x];\n\n}\n\n\nvoid main(){\n\n  vec2 uv =\n    gl_FragCoord.xy /\n    resolution.xy;\n\n\n  uv -= 0.5;\n\n\n  uv.x *=\n    resolution.x /\n    resolution.y;\n\n\n  float f =\n    pattern(uv);\n\n\n  vec2 mouse =\n    mousePos /\n    resolution;\n\n\n  mouse -= 0.5;\n\n\n  mouse.x *=\n    resolution.x /\n    resolution.y;\n\n\n  float dist =\n    length(\n      uv-mouse\n    );\n\n\n  float effect =\n    1.0 -\n    smoothstep(\n      0.0,\n      mouseRadius,\n      dist\n    );\n\n\n  f -=\n    0.5 *\n    effect;\n\n\n  vec3 col =\n    mix(\n      vec3(0.0),\n      waveColor,\n      f\n    );\n\n\n  vec2 pixel =\n    floor(\n      gl_FragCoord.xy/2.0\n    );\n\n\n  float threshold =\n    bayer8(pixel)/64.0 -\n    0.25;\n\n\n  col +=\n    threshold/3.0;\n\n\n  col =\n    clamp(\n      col-0.2,\n      0.0,\n      1.0\n    );\n\n\n  col =\n    floor(\n      col*3.0+0.5\n    )/3.0;\n\n\n  outColor =\n    vec4(col,1.0);\n\n}\n";
+
+      function compile(n, e) {
+        const o = gl.createShader(n);
+        if (gl.shaderSource(o, e), gl.compileShader(o), !gl.getShaderParameter(o, gl.COMPILE_STATUS)) {
+          const n = gl.getShaderInfoLog(o);
+          throw gl.deleteShader(o), new Error(n)
+        }
+        return o
+      }
+      const prog = gl.createProgram();
+      if (gl.attachShader(prog, compile(gl.VERTEX_SHADER, vs)), gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fs)), gl.linkProgram(prog), !gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+      gl.useProgram(prog);
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf), gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+      const pos = gl.getAttribLocation(prog, "position");
+      gl.enableVertexAttribArray(pos), gl.vertexAttribPointer(pos, 2, gl.FLOAT, !1, 0, 0);
+      const uRes = gl.getUniformLocation(prog, "resolution"),
+        uTime = gl.getUniformLocation(prog, "time"),
+        uWave = gl.getUniformLocation(prog, "waveColor"),
+        uMouse = gl.getUniformLocation(prog, "mousePos"),
+        uRad = gl.getUniformLocation(prog, "mouseRadius");
+      let mx = 0,
+        my = 0;
+
+      function resize() {
+        const n = Math.min(devicePixelRatio || 1, 2),
+          e = Math.floor(innerWidth * n),
+          o = Math.floor(innerHeight * n);
+        canvas.width === e && canvas.height === o || (canvas.width = e, canvas.height = o, gl.viewport(0, 0, e, o))
       }
 
-    }catch(error){
-
-      console.error(
-        "Copy failed:",
-        error
-      );
-
-    }
-
-  }
-
-}
-
-</script>
-
-</body>
-</html>
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-L7ZXRTP7F0"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-L7ZXRTP7F0');
-</script>
+      function render(n) {
+        resize(), gl.uniform2f(uRes, canvas.width, canvas.height), gl.uniform1f(uTime, .001 * n), gl.uniform3f(uWave, .5, .5, .5), gl.uniform2f(uMouse, mx, my), gl.uniform1f(uRad, .25), gl.drawArrays(gl.TRIANGLES, 0, 6), requestAnimationFrame(render)
+      }
+      window.addEventListener("pointermove", (n => {
+        const e = Math.min(devicePixelRatio || 1, 2);
+        mx = n.clientX * e, my = (innerHeight - n.clientY) * e
+      })), resize(), requestAnimationFrame(render)
+    </script>
+    <script>
+      let copiedText = "";
+      async function contextAction(e) {
+        if (document.getElementById("context-menu").style.display = "none", "copy" === e) {
+          if (!copiedText) return;
+          try {
+            if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(copiedText);
+            else {
+              const e = document.createElement("textarea");
+              e.value = copiedText, e.style.position = "fixed", e.style.left = "-9999px", document.body.appendChild(e), e.focus(), e.select(), document.execCommand("copy"), e.remove()
+            }
+            const e = document.getElementById("copy-notification");
+            e && (e.classList.add("show"), clearTimeout(window.copyNotificationTimeout), window.copyNotificationTimeout = setTimeout((function() {
+              e.classList.remove("show")
+            }), 1500))
+          } catch (e) {
+            console.error("Copy failed:", e)
+          }
+        }
+      }
+      document.addEventListener("contextmenu", (function(e) {
+        e.preventDefault(), copiedText = window.getSelection().toString();
+        const t = document.getElementById("context-menu");
+        t.style.display = "block";
+        let n = e.clientX,
+          o = e.clientY;
+        const i = t.getBoundingClientRect();
+        n + i.width > window.innerWidth && (n = window.innerWidth - i.width - 10), o + i.height > window.innerHeight && (o = window.innerHeight - i.height - 10), t.style.left = n + "px", t.style.top = o + "px"
+      })), document.addEventListener("click", (function(e) {
+        const t = document.getElementById("context-menu");
+        t.contains(e.target) || (t.style.display = "none")
+      }))
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L7ZXRTP7F0"></script>
+    <script>
+      function gtag() {
+        dataLayer.push(arguments)
+      }
+      window.dataLayer = window.dataLayer || [], gtag("js", new Date), gtag("config", "G-L7ZXRTP7F0")
+    </script>
