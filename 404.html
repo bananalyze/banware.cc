@@ -1,14 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; URL='https://banware.cc'" />
-    <title>Redirecting...</title>
-    <script>
-        window.location.href = "https://banware.cc";
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>404 | banware.cc</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;650;800&display=swap" rel="stylesheet">
+  <!-- Absolute path so the CSS still loads on deep URLs like /foo/bar -->
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <p>Page not found. Redirecting to home...</p>
+  <canvas id="bg"></canvas>
+
+  <div id="site">
+    <nav>
+      <a class="logo" href="https://banware.cc/">banware<span>.cc</span></a>
+      <a class="navbtn" href="https://banware.cc/">Home</a>
+    </nav>
+
+    <main>
+      <div class="hero">
+        <div class="hero-inner">
+          <div class="eyebrow"><span class="dot"></span> Error 404</div>
+          <h1>Page <span>not found.</span></h1>
+          <p>The page you're looking for doesn't exist or has been moved. Check the address, or head back to the home page.</p>
+          <div class="actions">
+            <a class="primary" href="https://banware.cc/">Back to home</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>&copy; banware.cc</footer>
+  </div>
+
+  <script>
+    // Subtle drifting-dot background for #bg
+    (function () {
+      var c = document.getElementById('bg'), x = c.getContext('2d'), w, h, dots = [];
+      function resize() {
+        w = c.width = innerWidth;
+        h = c.height = innerHeight;
+      }
+      resize();
+      addEventListener('resize', resize);
+      for (var i = 0; i < 70; i++) {
+        dots.push({
+          x: Math.random() * innerWidth,
+          y: Math.random() * innerHeight,
+          r: Math.random() * 1.3 + .3,
+          v: Math.random() * .25 + .05
+        });
+      }
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) { draw(); return; }
+      function draw() {
+        x.clearRect(0, 0, w, h);
+        x.fillStyle = 'rgba(255,255,255,.25)';
+        dots.forEach(function (d) {
+          d.y -= d.v;
+          if (d.y < -2) { d.y = h + 2; d.x = Math.random() * w; }
+          x.beginPath();
+          x.arc(d.x, d.y, d.r, 0, 6.283);
+          x.fill();
+        });
+      }
+      (function loop() { draw(); requestAnimationFrame(loop); })();
+    })();
+  </script>
 </body>
 </html>
