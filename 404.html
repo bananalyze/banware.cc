@@ -97,18 +97,13 @@
       (function () {
         const audio = document.getElementById("bg-audio");
 
-        // Try immediate autoplay first
+        const unlock = () => {
+          audio.play().catch(() => {});
+        };
+
         audio.play().catch(() => {
-          // Browser blocked it — wait for first user interaction
-          const unlock = () => {
-            audio.play();
-            document.removeEventListener("click", unlock);
-            document.removeEventListener("keydown", unlock);
-            document.removeEventListener("touchstart", unlock);
-          };
-          document.addEventListener("click", unlock);
-          document.addEventListener("keydown", unlock);
-          document.addEventListener("touchstart", unlock);
+          window.addEventListener("touchend", unlock, { once: true });
+          window.addEventListener("click", unlock, { once: true });
         });
       })();
     </script>
