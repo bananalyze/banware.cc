@@ -12,13 +12,12 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <!-- Absolute path so the CSS still loads on deep URLs like /foo/bar -->
     <link rel="stylesheet" href="/style.css">
   </head>
 
   <body>
-    <audio src="aaron-misery.mp3" autoplay loop></audio>
-    
+    <audio id="bg-audio" src="aaron-misery.mp3" loop></audio>
+
     <div id="site"> <canvas id="bg"></canvas>
       <main>
         <nav> <a href="https://banware.cc/" class="logo"> banware<span>.</span> </a>
@@ -91,6 +90,27 @@
         const e = Math.min(devicePixelRatio || 1, 2);
         mx = n.clientX * e, my = (innerHeight - n.clientY) * e
       })), resize(), requestAnimationFrame(render)
+    </script>
+
+    <!-- Audio autoplay unlock -->
+    <script>
+      (function () {
+        const audio = document.getElementById("bg-audio");
+
+        // Try immediate autoplay first
+        audio.play().catch(() => {
+          // Browser blocked it — wait for first user interaction
+          const unlock = () => {
+            audio.play();
+            document.removeEventListener("click", unlock);
+            document.removeEventListener("keydown", unlock);
+            document.removeEventListener("touchstart", unlock);
+          };
+          document.addEventListener("click", unlock);
+          document.addEventListener("keydown", unlock);
+          document.addEventListener("touchstart", unlock);
+        });
+      })();
     </script>
 
     <!-- Custom context menu -->
